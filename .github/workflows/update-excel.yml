@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -22,7 +22,7 @@ jobs:
           pip install requests pandas openpyxl
 
       - name: Run Python script
-        run: python "gold price updater.py"
+        run: python "gold-price-updater.py"
 
       - name: Commit and push changes if file changed
         run: |
