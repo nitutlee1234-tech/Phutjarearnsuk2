@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="th">
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ห้างทองพุทเจริญสุข 2</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <!-- โหลดไลบรารี SheetJS สำหรับอ่านไฟล์ Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <!-- โหลดสคริปต์ Google Translate -->
+    <script type="text/javascript"
+        src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({ pageLanguage: 'th', autoDisplay: false }, 'google_translate_element');
+        }
+
+        // ฟังก์ชันสลับภาษา
+        function changeLanguage(langCode) {
+            var select = document.querySelector('.goog-te-combo');
+            if (select) {
+                select.value = langCode;
+                select.dispatchEvent(new Event('change'));
+            }
+        }
+    </script>
+
+
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                /* เริ่มต้นจากมองไม่เห็น */
+            }
+
+            to {
+                opacity: 1;
+                /* จบที่แสดงผลปกติ */
+            }
+        }
+
+        :root {
+            --gold: #C9A84C;
+            --gold-light: #E8D08A;
+            --gold-pale: #F7EED0;
+            --dark-red: #6B0F1A;
+            --deep-bg: #1A0A00;
+            --text-light: #F5EDD8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "IBM Plex Sans Thai", sans-serif;
+            background-color: var(--dark-red);
+            color: var(--text-light);
+            padding-bottom: 60px;
+            min-height: 200vh;
+            padding-top: 0px;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        /* ซ่อนแถบและกล่องเครื่องมือเดิมของ Google Translate ไม่ให้เกะกะหน้าจอ */
+        #google_translate_element,
+        .goog-te-banner-frame {
+            display: none !important;
+        }
+
+        body {
+            top: 0px !important;
+        }
+
+        /* จัดตำแหน่งปุ่มเปลี่ยนภาษาไว้มุมขวาบน */
+        .lang-switch-container {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 6px;
+            border-radius: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .lang-btn {
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #ddd;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s ease;
+        }
+
+        .lang-btn:hover {
+            background-color: #d4af37;
+            /* สีทอง */
+            color: #fff;
+            border-color: #d4af37;
+            transform: translateY(-1px);
+        }
+
+        /* แบนเนอร์ซ่อนไว้เหนือเพดานเว็บ */
+        /* แบนเนอร์ซ่อนไว้เหนือเพดานเว็บ (-100%) */
+        .top-banner-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            background: rgba(26, 10, 0, 0.95);
+            border-bottom: 3px solid var(--gold);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+            transform: translateY(-100%);
+            transition: transform 0.4s ease-in-out;
+        }
+
+        /* ปุ่ม 3 ขีด (Hamburger Menu) มุมซ้ายบน */
+        .menu-toggle-btn {
+            position: fixed;
+            top: 15px;
+            left: 20px;
+            z-index: 10000;
+            background: rgba(26, 10, 0, 0.85);
+            color: var(--gold);
+            border: 2px solid var(--gold);
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .menu-toggle-btn:hover {
+            background: var(--gold);
+            color: var(--deep-bg);
+            transform: scale(1.05);
+        }
+
+        /* แถบเมนูด้านข้าง (Sidebar) */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            /* ซ่อนไว้ด้านซ้ายนอกจอ */
+            width: 280px;
+            height: 100%;
+            background: rgba(26, 10, 0, 0.95);
+            border-right: 3px solid var(--gold);
+            box-shadow: 5px 0 20px rgba(0, 0, 0, 0.7);
+            z-index: 10001;
+            transition: left 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            /* 👉 เพิ่มบรรทัดนี้เพื่อให้มีลูกกลิ้งเลื่อนเมื่อเมนูยาวเกินหน้าจอ */
+            overflow-y: auto;
+        }
+
+        /* คลาสสั่งเปิด Sidebar */
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--gold);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title {
+            color: var(--gold-light);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .close-sidebar-btn {
+            background: none;
+            border: none;
+            color: var(--gold);
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .close-sidebar-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .sidebar-menu-item {
+            color: var(--text-light);
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(201, 168, 76, 0.3);
+            transition: all 0.2s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-menu-item:hover {
+            background: var(--gold);
+            color: var(--deep-bg);
+            border-color: var(--gold);
+            padding-left: 20px;
+        }
+
+        /* ฉากหลังมืดเวลาเปิด Sidebar */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            display: none;
+            backdrop-filter: blur(2px);
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px 20px 20px;
+        }
+
+        h1 {
+            color: var(--gold);
+            font-size: 50px;
+            text-shadow: 1px 1px 2px var(--dark-red), 0 0 25px var(--gold-light);
+        }
+
+        .subtitle {
+            font-size: 26px;
+            color: var(--gold);
+            margin-top: 10px;
+        }
+
+        .desc {
+            font-size: 18px;
+            color: var(--text-light);
+            margin: 10px auto;
+            max-width: 800px;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+
+
+
+
+<body>
+    <header>
+        <h1>ห้างทองพุทเจริญสุข 2</h1>
+        <div class="subtitle">เดอะมอลล์บางแค (ร้านพุท)</div>
+        <p class="desc">
+            จำหน่ายทองคำแท้และรับซื้อทองคำ เลี่ยมกรอบพระกันน้ำ 100% <br> เช่าบูชาวัตถุมงคล
+            รับงานสั่งทำและซ่อมเครื่องประดับ
+        </p>
+
+    </header>
+
+    <!-- ซ่อน Element ระบบของ Google -->
+    <div id="google_translate_element"></div>
+
+    <!-- แผงปุ่มเปลี่ยนภาษา 4 ภาษา (มุมขวาบน) -->
+    <div class="lang-switch-container">
+        <button class="lang-btn" onclick="changeLanguage('th')">🇹🇭 TH</button>
+        <button class="lang-btn" onclick="changeLanguage('en')">🇬🇧 EN</button>
+        <button class="lang-btn" onclick="changeLanguage('zh-CN')">🇨🇳 中文</button>
+        <button class="lang-btn" onclick="changeLanguage('my')">🇲🇲 မြန်မာ</button>
+    </div>
+
+
+    <!-- ปุ่ม 3 ขีด (มุมซ้ายบน) -->
+    <button class="menu-toggle-btn" onclick="toggleSidebar()" title="เปิดเมนูด้านข้าง">☰</button>
+
+    <!-- ฉากหลังมืดเวลาเปิด Sidebar -->
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- แถบเมนูด้านข้าง (Sidebar) -->
+    <div id="mySidebar" class="sidebar">
+        <div class="sidebar-header">
+            <span style="text-shadow: 1px 1px 2px var(--dark-red), 0 0 25px var(--gold-light);"
+                class="sidebar-title">เมนูนำทาง</span>
+            <button class="close-sidebar-btn" onclick="toggleSidebar()">×</button>
+        </div>
+        <a href="/index.html" class="sidebar-menu-item">🏠 หน้าแรก</a>
+        <a href="https://linktr.ee/put2gold" target="_blank" class="sidebar-menu-item" style="background: linear-gradient(to right, #0b4f23, #198754) !important;
+      /* พื้นหลังเขียวเข้ากับธีม Linktree */
+      border: 1px solid #28a745 !important;">🔗 Linktree รวมลิงก์</a>
+        <a href="https://line.me/R/ti/p/%40519rniwc" target="_blank" class="sidebar-menu-item">💬 ติดต่อ Line ร้าน</a>
+        <a class="sidebar-menu-item" target="_blank">📞 โทรศัพท์ร้าน</a>
+
+
+        <br>
+        <br>
+        <div class="sidebar-header">
+            <span style="text-shadow: 1px 1px 2px var(--dark-red), 0 0 25px var(--gold-light);"
+                class="sidebar-title">ประเภทสินค้า</span>
+            <button class="close-sidebar-btn" onclick="toggleSidebar()">×</button>
+        </div>
+
+        <br>
+        <div class="sidebar-header">
+            <span style="text-shadow: 1px 1px 2px var(--dark-red), 0 0 25px var(--gold-light);"
+                class="sidebar-title">รายการสินค้า</span>
+        </div>
+        <!-- เพิ่มลิงก์เชื่อมไปหน้าย่อยของคุณตรงนี้ -->
+        <a href="/goldbar/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 ทองคำแท่ง 96.5%</a>
+
+        <br>
+        <a href="/goldring/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 แหวนทอง 96.5%</a>
+        <a href="/jewlvy-ring/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 แหวนพลอย 96.5%</a>
+        <a href="/hand-bangle/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 กำไลข้อมือ 96.5%</a>
+        <a href="/pixiu-bracelet/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 ปี่เซี่ยะข้อมือ 96.5%</a>
+        <a href="/bracelet/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 สร้อยข้อมือ 96.5%</a>
+        <a href="/pearl-necklace/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 สร้อยคอมุก</a>
+        <a href="/necklace/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 สร้อยคอ 96.5%</a>
+        <a href="/ankle-bracelet/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 สร้อยข้อเท้า 96.5%</a>
+        <a href="/gold-anklet/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 กำไลเท้า 96.5%</a>
+        <a href="/earring/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 ต่างหู 96.5%</a>
+        <a href="/earring-back/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 แป้นต่างหู 96.5%</a>
+        <a href="/gold-pendant/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 จี้ทอง 96.5%</a>
+
+        <br>
+        <a href="/solid-gold-amulet-case/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 พระทองคำ 96.5%</a>
+        <a href="/gold-framed-Thai-amulet/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 พระเลี่ยมกรอบทอง
+            96.5%</a>
+        <a href="/multi-pendant-clasp/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 พระแผง</a>
+        <a href="/multi-loop-amulet-clip/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙
+            เเหนบชุด(ก้ามปู+แหนบเปล่า) 96.5%</a>
+        <a href="/gold-lobster-clasp/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 ก้ามปู 96.5%</a>
+        <a href="/amulet-brooch-clip/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 แหนบเปล่า 96.5%</a>
+        <a href="/spring-ring-clasp/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 ห่วงสปริง 96.5%</a>
+        <a href="/solid-gold-amulet-case/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 ตลับหนีบทองแท้
+            96.5%</a>
+        <a href="/gold-amulet-frame/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 กรอบพระทอง 96.5%</a>
+
+        <br>
+        <a href="/naga-bracelet/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 กำไลนาถ</a>
+        <a href="/naga-necklace/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 สร้อยนาถ</a>
+        <a href="/silver-bracelet/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 กำไลเงิน</a>
+        <a href="/sliver-necklace/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 สร้อยเงิน</a>
+
+        <br>
+        <a href="/amulet-nylon-cord/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 เชือกร่ม</a>
+        <a href="/display-case/" class="sidebar-menu-item" onclick="toggleSidebar()">🪙 ตู้โชว์</a>
+
+
+</body>
+
+
+<script>
+    // ฟังก์ชันเปิด/ปิด Sidebar เมนูด้านข้าง
+    function toggleSidebar() {
+        const sidebar = document.getElementById('mySidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
+    }
+
+
+</script>
