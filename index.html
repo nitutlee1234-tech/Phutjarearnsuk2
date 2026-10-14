@@ -823,7 +823,7 @@
     // ฟังก์ชันสำรอง: โหลดจากไฟล์ Excel 
     async function loadExcelPricesFromBackup() {
       try {
-        let response = await fetch('controller.xlsx');
+        let response = await fetch('controller.xlsx?v=' + new Date().getTime());
         let data = await response.arrayBuffer();
         let workbook = XLSX.read(data, { type: 'array' });
         let sheetName = workbook.SheetNames[0];
