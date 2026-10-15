@@ -4,13 +4,15 @@ on:
   schedule:
     - cron: '*/30 * * * *' # ตั้งเวลาให้รันทุกๆ 30 นาที
   workflow_dispatch: # ปุ่มให้เรากดรันมือได้จากหน้าเว็บ GitHub
+  repository_dispatch:    # <--- เพิ่มบรรทัดนี้ เพื่อให้รับคำสั่งจาก cron-job ได้
+    types: [trigger-update]
 
 jobs:
   update-data:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
